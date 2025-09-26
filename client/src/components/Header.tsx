@@ -6,7 +6,9 @@ import {
 } from '@mui/material';
 import { NavLink } from 'react-router';
 import { useTheme } from '@mui/material/styles';
-import { createGlobalStyle } from 'styled-components';
+import { useUser } from '../hooks/useUser'; 
+import { useAuth } from '../context/AuthContext';
+
 
 const links = [
   { title: 'Home', path: '/' },
@@ -14,17 +16,16 @@ const links = [
   { title: 'Contact', path: '/contact' },
   { title: 'Catalog', path: '/catalog' },
 ];
-const authLinks = [{ title: 'Login', path: '/auth' }]
+const authLinks = [{ title: 'Login', path: '/login' }]
 
-const GlobalFont = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-  body {
-    font-family: 'Poppins', sans-serif;
-  }
-`;
+
 
 export default function Header() {
-
+  const { token } = useAuth();
+  const { user } = useUser(token);
+  console.log(user);
+  const { logout } = useAuth();
+  console.log(user)
   const [drawerOpen, setDrawerOpen] = useState(false); // Menü için
   const [userDrawerOpen, setUserDrawerOpen] = useState(false); // Kullanıcı için
   const theme = useTheme();
@@ -33,18 +34,18 @@ export default function Header() {
 
   return (
     <>
-      <GlobalFont />
+
       <AppBar position="static" sx={{ mb: 4, backgroundColor: "#fff", fontFamily: 'Poppins, sans-serif', boxShadow: 3 }}>
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, mt: 1 }} component={NavLink} to="/">
             <Avatar
               
               src="./logo.svg"
-              alt="DOA'S CEZVE"
+              alt="DOA"
               sx={{
                 width: 56,
                 height: 56,
-                bgcolor: '#8c7373',
+                bgcolor: '#d8c3c3',
                 boxShadow: 2
               }}
             />
@@ -91,7 +92,7 @@ export default function Header() {
             </Box>
             <Avatar
               src="./profile.jpg" // Profil resminizin yolunu buraya yazın
-              alt=""
+              alt={user?.email}
               sx={{
                 width: 40,
                 height: 40,
@@ -175,19 +176,24 @@ export default function Header() {
           }
         }}
       >
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2 }} >
           <Avatar
             src="./profile.jpg"
-            alt=""
+            alt={user?.email}
             sx={{
-              width: 80,
-              height: 80,
+              width: 60,
+              height: 60,
               margin: "0 auto",
               bgcolor: '#8c7373',
               mb: 2,
             }}
+            onClick={() => {
+              setUserDrawerOpen(false);
+            }}
           />
-          <List>
+          <List onClick={() => {
+            setUserDrawerOpen(false);
+          }}>
             <ListItem
               component={NavLink}
               to={links[0].path} // Tüm Siparişlerim sayfasının yolu
@@ -241,6 +247,28 @@ export default function Header() {
               <ListItemText  primary="Help" />
             </ListItem>
           </List>
+          <List>
+            <ListItem
+              component={NavLink}
+              to="/dashboard"
+              sx={{ cursor: 'pointer', "&:hover .MuiListItemText-primary": { color: brandBrown } }}
+              onClick={() => setUserDrawerOpen(false)}
+            >
+              <ListItemText primary="Dashboard" />
+            </ListItem>
+
+            <ListItem
+              sx={{ cursor: 'pointer', "&:hover .MuiListItemText-primary": { color: brandBrown } }}
+              onClick={() => {
+                logout(); // token ve email temizlendi
+                setUserDrawerOpen(false);
+                window.location.href = "/login"; // login sayfasına yönlendir
+              }}
+            >
+              <ListItemText primary="Logout" />
+            </ListItem>
+          </List>
+
         </Box>
       </Drawer>
     </>
